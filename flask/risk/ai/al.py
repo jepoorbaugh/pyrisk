@@ -1,4 +1,4 @@
-from ai import AI
+from risk.ai import AI
 from collections import defaultdict
 import random
 

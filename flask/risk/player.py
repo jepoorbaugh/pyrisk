@@ -1,12 +1,14 @@
 from copy import deepcopy
 
 class Player(object):
+    # TODO: Add capitals
     def __init__(self, name, game, ai_class, ai_kwargs):
         self.name = name
         self.color = 0
         self.ord = 32
         self.ai = ai_class(self, game, game.world, **ai_kwargs)
         self.world = game.world
+        # self.capital = None
 
     @property
     def territories(self):
@@ -38,7 +40,8 @@ class Player(object):
 
     @property
     def reinforcements(self):
-        return max(self.territory_count//3, 3) + sum(a.value for a in self.areas)
+        # return max(self.territory_count//3, 3) + sum(a.value for a in self.areas)
+        return 3 + sum(a.value for a in self.areas)
 
     def __repr__(self):
         return "P;%s;%s" % (self.name, self.ai.__class__.__name__)

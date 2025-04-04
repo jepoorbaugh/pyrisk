@@ -1,2 +1,5 @@
 *.pyc
 *~
+*.venv
+*flask/__pycache__
+*__pycache__

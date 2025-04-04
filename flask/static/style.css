@@ -1,0 +1,31 @@
+#content {
+    text-align: center;
+    margin-left:auto;
+    margin-right:auto;
+    width: 80%;
+}
+
+#gameboard {
+    display: block;
+    width: 66%;
+    margin-left: auto;
+    margin-right: auto;
+    background-color: lightblue;
+}
+
+.updated-troop-count {
+    background-color: HotPink;
+}
+
+* {
+    font-family: "Orbitron", sans-serif;
+    font-optical-sizing: auto;
+    font-weight: 500;
+    font-style: normal;
+    color: #ffffff;
+    background-color: #1c1c1c;
+}
+
+#json-textarea-send-request {
+    color: #080808;
+}

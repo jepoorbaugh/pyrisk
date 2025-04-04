@@ -1,18 +1,21 @@
 import random
 import logging
 
+
 class AI(object):
     """
     Base class for AIs to inherit from, containing some utility methods
     """
+
     _sim_cache = {}
+
     @classmethod
     def simulate(cls, n_atk, n_def, tests=1000):
         """
         Simulates the outcome of a battle with `n_atk` attackers and `n_def`
         defenders. The battle is simulated `tests` times, and the result cached
         and shared between all AI instances.
-        
+
         Returns a tuple (probability_of_victory,
                          avg_surviving_attackers,
                          avg_surviving_defenders)
@@ -27,9 +30,13 @@ class AI(object):
             d = n_def
             while a > 1 and d > 0:
                 atk_dice = min(a - 1, 3)
-                atk_roll = sorted([random.randint(1, 6) for i in range(atk_dice)], reverse=True)
+                atk_roll = sorted(
+                    [random.randint(1, 6) for i in range(atk_dice)], reverse=True
+                )
                 def_dice = min(d, 2)
-                def_roll = sorted([random.randint(1, 6) for i in range(def_dice)], reverse=True)
+                def_roll = sorted(
+                    [random.randint(1, 6) for i in range(def_dice)], reverse=True
+                )
 
                 for aa, dd in zip(atk_roll, def_roll):
                     if aa > dd:
@@ -41,12 +48,13 @@ class AI(object):
                 victory += 1
             else:
                 d_survive.append(d)
-        
-        cls._sim_cache[(n_atk, n_def)] = (float(victory) / tests, 
-                                          (float(sum(a_survive)) / victory) if victory else 0,
-                                          (float(sum(d_survive)) / (tests - victory)) if tests - victory else 0)
+
+        cls._sim_cache[(n_atk, n_def)] = (
+            float(victory) / tests,
+            (float(sum(a_survive)) / victory) if victory else 0,
+            (float(sum(d_survive)) / (tests - victory)) if tests - victory else 0,
+        )
         return cls._sim_cache[(n_atk, n_def)]
-            
 
     def __init__(self, player, game, world, **kwargs):
         """
@@ -60,23 +68,23 @@ class AI(object):
         self.game = game
         self.world = world
         self.logger = logging.getLogger("pyrisk.ai.%s" % self.__class__.__name__)
-    
+
     def loginfo(self, msg, *args):
         """
         Logging methods. These messages will appear at the bottom of the screen
         when in curses mode, on screen in console mode or in a logfile if you
-        specify that at the command line. 
+        specify that at the command line.
         """
         self.logger.info(msg, *args)
-        
+
     def logwarn(self, msg, *args):
         """As loginfo, but slightly more emphasis."""
         self.logger.warn(msg, *args)
-        
+
     def logerror(self, msg, *args):
         """As loginfo, but will cause curses mode to pause for longer over this message."""
         self.logger.error(msg, *args)
-    
+
     def start(self):
         """
         This method is called when the game starts. Implement it if you want
@@ -96,7 +104,7 @@ class AI(object):
         This method is called every time a game event occurs. `msg` will be a tuple
         containing a string followed by a set of arguments, look in game.py to see
         the types of messages that can be generated.
-        
+
         Implement it if you want to know what is happening during other player's
         turns, etc.
         """
@@ -106,7 +114,7 @@ class AI(object):
         """
         Initial placement phase. Called repeatedly until initial forces are exhausted.
         Claimed territories may only be reinforced once all empty territories are claimed.
-    
+
         `empty` is a list of unclaimed territory objects, or None if all have been claimed.
         `remaining` is the number of pieces the player has left to place.
 
@@ -123,7 +131,7 @@ class AI(object):
         Return a dictionary of territory object or name -> count, which should sum to `available`.
         """
         raise NotImplementedError
-    
+
     def attack(self):
         """
         Combat stage of a turn.
@@ -142,7 +150,12 @@ class AI(object):
         """
         Free movement section of the turn.
 
-        Return a single tuple (src, dest, count) where `src` and `dest` are territory 
+        Return a single tuple (src, dest, count) where `src` and `dest` are territory
         objects or names, or None to skip this part of the turn.
         """
         return None
+
+
+# ai = AI(None, None, None)
+# print(ai.get_odds(100, 100))
+# print(ai.simulate(100, 100))
