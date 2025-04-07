@@ -1,13 +1,13 @@
 from display import Display, CursesDisplay
 from player import Player
-from territory import World
+from territory import World, Territory
 from world import CONNECT, AREAS, MAP, KEY
 import logging
 
 LOG = logging.getLogger("pyrisk")
 import random
 
-from typing import Union, List
+from typing import Union, Callable
 
 
 class Game(object):
@@ -60,7 +60,7 @@ class Game(object):
         self.players[name] = player
 
     @property
-    def player(self):
+    def player(self) -> Player:
         """Property that returns the correct player object for this turn."""
         return self.players[self.turn_order[self.turn % len(self.players)]]
 
@@ -90,7 +90,7 @@ class Game(object):
     def play(
         self,
         *,
-        turn_order: Union[List[Player], None] = None,
+        turn_order: Union[list[Player], None] = None,
         randomize_turn_order: bool = True,
     ):
         # Setup players
@@ -117,9 +117,9 @@ class Game(object):
         while live_players > 1:
             if self.player.alive:
 
-                self.reinforce(self.player)
-                self.attack(self.player)
-                self.freemove(self.player)
+                self.reinforce(self.player, self.player.ai.reinforce())
+                self.attack(self.player, self.player.ai.attack())
+                self.freemove(self.player, self.player.ai.freemove())
 
                 live_players = len([p for p in self.players.values() if p.alive])
             self.turn += 1
@@ -130,8 +130,8 @@ class Game(object):
             p.ai.end()
         return winner.name
 
-    def reinforce(self, player: Player):
-        choices = player.ai.reinforce(player.reinforcements)
+    def reinforce(self, player: Player, choices: dict[Union[Territory, str], int]):
+        # choices = player.ai.reinforce(player.reinforcements)
         assert sum(choices.values()) == player.reinforcements
         for tt, ff in choices.items():
             t = self.world.territory(tt)
@@ -151,10 +151,18 @@ class Game(object):
                 territory=[t],
                 player=[player.name],
             )
-            return True
 
-    def attack(self, player: Player):
-        for src, target, attack, move in player.ai.attack():
+    def attack(
+        self,
+        player: Player,
+        attacks: tuple[
+            Territory | str,  # Source territory
+            Territory | str,  # Target territory
+            Callable[[int, int], bool] | None,  # Attack strategy
+            Callable[[int], int] | None,  # Movement strategy
+        ],
+    ) -> None:
+        for src, target, attack, move in attacks:
             st = self.world.territory(src)
             tt = self.world.territory(target)
             if st is None:
@@ -190,8 +198,8 @@ class Game(object):
                 player=[self.player.name, tt.owner.name],
             )
 
-    def freemove(self, player: Player):
-        freemove = player.ai.freemove()
+    def freemove(self, player: Player, freemove):
+        # freemove = player.ai.freemove()
         if freemove:
             src, target, count = freemove
             st = self.world.territory(src)
