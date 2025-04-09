@@ -117,7 +117,9 @@ class Game(object):
         while live_players > 1:
             if self.player.alive:
 
-                self.reinforce(self.player, self.player.ai.reinforce())
+                self.reinforce(
+                    self.player, self.player.ai.reinforce(self.player.reinforcements)
+                )
                 self.attack(self.player, self.player.ai.attack())
                 self.freemove(self.player, self.player.ai.freemove())
 
