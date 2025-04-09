@@ -19,6 +19,7 @@ parser = argparse.ArgumentParser()
 
 parser.add_argument("--nocurses", dest="curses", action="store_false", default=True, help="Disable the ncurses map display")
 parser.add_argument("--nocolor", dest="color", action="store_false", default=True, help="Display the map without colors")
+parser.add_argument("-q", "--quiet", action="store_true", default=False, help="Enable quiet mode so no logs will be outputted")
 parser.add_argument("-l", "--log", action="store_true", default=False, help="Write game events to a logfile")
 parser.add_argument("-d", "--delay", type=float, default=0.1, help="Delay in seconds after each action is displayed")
 parser.add_argument("-s", "--seed", type=int, default=None, help="Random number generator seed")
@@ -32,7 +33,9 @@ args = parser.parse_args()
 NAMES = ["ALPHA", "BRAVO", "CHARLIE", "DELTA", "ECHO", "FOXTROT"]
 
 LOG.setLevel(logging.DEBUG)
-if args.log:
+if args.quiet:
+    LOG.propagate = False
+elif args.log:
     logging.basicConfig(filename="pyrisk.log", filemode="w")
 elif not args.curses:
     logging.basicConfig()
