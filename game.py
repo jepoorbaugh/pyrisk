@@ -177,6 +177,7 @@ class Game(object):
                 self.aiwarn("attack unowned src %s", st.name)
                 continue
             if tt.owner == player:
+                print(tt.owner, player)
                 self.aiwarn("attack owned target %s", tt.name)
                 continue
             if tt not in st.connect:
