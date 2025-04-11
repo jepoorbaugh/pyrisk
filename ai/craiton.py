@@ -20,14 +20,15 @@ class CrAItonAI(AI):
     def start(self):
         self.area_priority = list(self.world.areas)
         random.shuffle(self.area_priority)
-        self.monte_carlo_sims =5
+        self.monte_carlo_sims = 100
 
     def priority(self):
-        priority = sorted([t for t in self.player.territories if t.border], 
-                          key=lambda x: self.area_priority.index(x.area.name))
+        priority = sorted(
+            [t for t in self.player.territories if t.border],
+            key=lambda x: self.area_priority.index(x.area.name),
+        )
         priority = [t for t in priority if t.area == priority[0].area]
         return priority if priority else list(self.player.territories)
-            
 
     def initial_placement(self, empty, available):
         if empty:
@@ -45,52 +46,52 @@ class CrAItonAI(AI):
         return result
 
     def attack(self):
-        best_move = None
-        best_score = -100000
-
-        move = ()
         continue_attacks = True
         while continue_attacks:
+            best_move = None
+            best_score = -100000
+            move = ()
             for src, dest in self.get_possible_attacks():
+                if (
+                    not src == None
+                    and not dest == None
+                    and self.simulate(
+                        self.world.territory(src).forces,
+                        self.world.territory(dest).forces,
+                    )[0]
+                    < 0.5
+                ):
+                    continue
                 attack_strat = lambda atk, deff: self.simulate(atk, deff)[0] > 0.5
                 score = 0
                 for i in range(self.monte_carlo_sims):
                     # Create a copy of the game to run the simulation on
-                    game = self.create_game_copy()
-
-                    turn_order = []
-                    for p in self.game.turn_order:
-                        turn_order.append(p)
-
-                    game.turn = self.game.turn
-                    game.turn_order = turn_order
+                    copy_game = self.create_game_copy()
 
                     if src != None and dest != None:
                         move = (
-                            game.world.territory(src),
-                            game.world.territory(dest),
+                            src,
+                            dest,
                             attack_strat,
                             None,
                         )
 
                         # Make move
-                        game.attack(
-                            game.players[self.player.name],
-                            [move],
+                        copy_game.attack(
+                            copy_game.players[self.player.name],
+                            move,
                         )
                     else:
                         move = None
 
-                    winner = game.play(
-                        turn_order=turn_order, randomize_turn_order=False
+                    winner = copy_game.play(
+                        turn_order=copy_game.turn_order, randomize_turn_order=False
                     )
 
                     if self.player.name == winner:
                         score += 1
                     else:
                         score -= 1
-                # print("Round Score: ", score)
-
                 # if our score is better than the current best score, store both
                 if score > best_score:
                     best_move = move
@@ -101,8 +102,9 @@ class CrAItonAI(AI):
                 continue_attacks = False
 
     def freemove(self):
-        srcs = sorted([t for t in self.player.territories if not t.border], 
-                      key=lambda x: x.forces)
+        srcs = sorted(
+            [t for t in self.player.territories if not t.border], key=lambda x: x.forces
+        )
         if srcs:
             src = srcs[-1]
             n = src.forces - 1
@@ -110,8 +112,7 @@ class CrAItonAI(AI):
         return None
 
     def create_game_copy(self):
-        copy_game: Game = Game(curses=False)
-        # copy_game.world = deepcopy(self.game.world)
+        copy_game: Game = Game(curses=False, iscopy=True)
 
         for p in list(self.game.players):
             copy_game.add_player(p, StupidAI)
@@ -123,29 +124,22 @@ class CrAItonAI(AI):
             ]
             copy_game.world.territory(name).forces = self.world.territory(name).forces
 
-            # print(copy_game.world.territory(name), "\t", copy_game.world.territory(name).owner, "\t",copy_game.world.territory(name).forces)
-
-        # print(f"Real Turn Order: {self.game.turn_order}")
-
-        # copy_game.turn_order = self.game.turn_order
+        turn_order = []
+        for p in self.game.turn_order:
+            turn_order.append(p)
         copy_game.turn = self.game.turn
+        copy_game.turn_order = turn_order
+
         return copy_game
 
     def get_border(self):
-        # border_territories = set(
-        #     t if t.border else None for t in self.player.territories
-        # )
-        # border_territories.remove(None)
         return set(t for t in self.player.territories if t.border)
 
     def get_possible_attacks(self):
         """Gets all possible attacks for the current board state
         Attacks are represented as tuples in the for (`src`, `dest`)
         """
-        attacks = [(None, None)]
         for src in self.get_border():
             for dest in src.connect:
-                if dest.owner != self.player and src.forces > 1:
-                    attacks.append((src.name, dest.name))
-        
-        return attacks
+                if dest.owner != src.owner and src.forces > 1:
+                    yield (src.name, dest.name)
