@@ -18,14 +18,23 @@ class CrAItonAI(AI):
     """
 
     def start(self):
+        self.area_priority = list(self.world.areas)
+        random.shuffle(self.area_priority)
         self.monte_carlo_sims =5
 
-    def initial_placement(self, empty, remaining):
+    def priority(self):
+        priority = sorted([t for t in self.player.territories if t.border], 
+                          key=lambda x: self.area_priority.index(x.area.name))
+        priority = [t for t in priority if t.area == priority[0].area]
+        return priority if priority else list(self.player.territories)
+            
+
+    def initial_placement(self, empty, available):
         if empty:
-            return random.choice(empty)
+            empty = sorted(empty, key=lambda x: self.area_priority.index(x.area.name))
+            return empty[0]
         else:
-            t = random.choice(list(self.player.territories))
-            return t
+            return random.choice(self.priority())
 
     def reinforce(self, available):
         border = [t for t in self.player.territories if t.border]
@@ -92,7 +101,13 @@ class CrAItonAI(AI):
                 continue_attacks = False
 
     def freemove(self):
-        pass
+        srcs = sorted([t for t in self.player.territories if not t.border], 
+                      key=lambda x: x.forces)
+        if srcs:
+            src = srcs[-1]
+            n = src.forces - 1
+            return (src, self.priority()[0], n)
+        return None
 
     def create_game_copy(self):
         copy_game: Game = Game(curses=False)
