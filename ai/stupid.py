@@ -2,11 +2,13 @@ from ai import AI
 import random
 import collections
 
+
 class StupidAI(AI):
     """
     StupidAI: Plays a completely random game, randomly choosing and reinforcing
     territories, and attacking wherever it can without any considerations of wisdom.
     """
+
     def initial_placement(self, empty, remaining):
         if empty:
             return random.choice(empty)
