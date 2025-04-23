@@ -120,7 +120,8 @@ class Game(object):
                 self.reinforce(
                     self.player, self.player.ai.reinforce(self.player.reinforcements)
                 )
-                self.attack(self.player, self.player.ai.attack())
+                for move in self.player.ai.attack():
+                    self.attack(self.player, move)
                 self.freemove(self.player, self.player.ai.freemove())
 
                 live_players = len([p for p in self.players.values() if p.alive])
@@ -157,48 +158,49 @@ class Game(object):
     def attack(
         self,
         player: Player,
-        attacks: tuple[
+        attack: tuple[
             Territory | str,  # Source territory
             Territory | str,  # Target territory
             Callable[[int, int], bool] | None,  # Attack strategy
             Callable[[int], int] | None,  # Movement strategy
         ],
     ) -> None:
-        for src, target, attack, move in attacks:
-            st = self.world.territory(src)
-            tt = self.world.territory(target)
-            if st is None:
-                self.aiwarn("attack invalid src %s", src)
-                continue
-            if tt is None:
-                self.aiwarn("attack invalid target %s", target)
-                continue
-            if st.owner != player:
-                self.aiwarn("attack unowned src %s", st.name)
-                continue
-            if tt.owner == player:
-                self.aiwarn("attack owned target %s", tt.name)
-                continue
-            if tt not in st.connect:
-                self.aiwarn("attack unconnected %s %s", st.name, tt.name)
-                continue
-            initial_forces = (st.forces, tt.forces)
-            opponent = tt.owner
-            victory = self.combat(st, tt, attack, move)
-            final_forces = (st.forces, tt.forces)
-            self.event(
-                (
-                    "conquer" if victory else "defeat",
-                    self.player,
-                    opponent,
-                    st,
-                    tt,
-                    initial_forces,
-                    final_forces,
-                ),
-                territory=[st, tt],
-                player=[self.player.name, tt.owner.name],
-            )
+        src, target, attack, move = attack
+        st = self.world.territory(src)
+        tt = self.world.territory(target)
+        if st is None:
+            self.aiwarn("attack invalid src %s", src)
+            return
+        if tt is None:
+            self.aiwarn("attack invalid target %s", target)
+            return
+        if st.owner != player:
+            self.aiwarn("attack unowned src %s", st.name)
+            return
+        if tt.owner == player:
+            print(tt.owner, player)
+            self.aiwarn("attack owned target %s", tt.name)
+            return
+        if tt not in st.connect:
+            self.aiwarn("attack unconnected %s %s", st.name, tt.name)
+            return
+        initial_forces = (st.forces, tt.forces)
+        opponent = tt.owner
+        victory = self.combat(st, tt, attack, move)
+        final_forces = (st.forces, tt.forces)
+        self.event(
+            (
+                "conquer" if victory else "defeat",
+                self.player,
+                opponent,
+                st,
+                tt,
+                initial_forces,
+                final_forces,
+            ),
+            territory=[st, tt],
+            player=[self.player.name, tt.owner.name],
+        )
 
     def freemove(self, player: Player, freemove):
         # freemove = player.ai.freemove()
