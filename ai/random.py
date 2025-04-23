@@ -3,9 +3,9 @@ import random
 import collections
 
 
-class StupidAI(AI):
+class RandomAI(AI):
     """
-    StupidAI: Plays a completely random game, randomly choosing and reinforcing
+    RandomAI: Plays a completely random game, randomly choosing and reinforcing
     territories, and attacking wherever it can without any considerations of wisdom.
     """
 
@@ -17,6 +17,7 @@ class StupidAI(AI):
             return t
 
     def attack(self):
+        # TODO: Make this ACTUALLY random
         for t in self.player.territories:
             for a in t.connect:
                 if a.owner != self.player:
@@ -24,6 +25,7 @@ class StupidAI(AI):
                         yield (t, a, None, None)
 
     def reinforce(self, available):
+        # TODO: Make this ACTUALLY random
         border = [t for t in self.player.territories if t.border]
         result = collections.defaultdict(int)
         for i in range(available):
