@@ -17,12 +17,31 @@ class RandomAI(AI):
             return t
 
     def attack(self):
-        # TODO: Make this ACTUALLY random
+        # Make a list of territories that have opposition nearby
+        offensive_territories = []
+
         for t in self.player.territories:
             for a in t.connect:
                 if a.owner != self.player:
-                    if t.forces > a.forces:
-                        yield (t, a, None, None)
+                    offensive_territories.append(t)
+                    break
+        
+        # Randomly choose offensive territory
+        src_territory = random.choice(offensive_territories)
+
+        # Make a list of territories that can be attacked from the src_territory
+        defensive_territories = []
+
+        for t in src_territory.connect:
+            if t.owner != self.player:
+                defensive_territories.append(t)
+        
+        # Randomly choose defensive territory
+        dst_territory = random.choice(defensive_territories)
+
+        # Yield results
+        # NOTE: It also is randomly chosen whether or not the AI keeps attacking
+        yield (src_territory, dst_territory, random.choice([True, False]), None)
 
     def reinforce(self, available):
         # TODO: Make this ACTUALLY random
