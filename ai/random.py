@@ -41,7 +41,7 @@ class RandomAI(AI):
 
         # Yield results
         # NOTE: It also is randomly chosen whether or not the AI keeps attacking
-        yield (src_territory, dst_territory, random.choice([True, False]), None)
+        yield (src_territory, dst_territory, lambda x, y: random.choice([True, False]), None)
 
     def reinforce(self, available):
         # TODO: Make this ACTUALLY random
