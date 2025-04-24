@@ -102,6 +102,7 @@ class CrAItonAI(AI):
                 continue_attacks = False
 
     def freemove(self):
+        # TODO: This is currently just copied from BetterAI, need to update to heuristics
         srcs = sorted(
             [t for t in self.player.territories if not t.border], key=lambda x: x.forces
         )
