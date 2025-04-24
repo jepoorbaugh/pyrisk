@@ -41,7 +41,8 @@ class Player(object):
         return max(self.territory_count//3, 3) + sum(a.value for a in self.areas)
 
     def __repr__(self):
-        return "P;%s;%s" % (self.name, self.ai.__class__.__name__)
+        if "name" in self.__dict__:
+            return "P;%s;%s" % (self.name, self.ai.__class__.__name__)
 
     def __hash__(self):
         return hash(("player", self.name))

@@ -1,15 +1,15 @@
 from ai import AI
 from ai.stupid import StupidAI
 
-from territory import Territory
-
 from game import Game
-from player import Player
-
-from copy import deepcopy
 
 import collections
 import random
+
+
+# from multiprocessing.pool import ThreadPool as Pool
+# from multiprocessing import Pool
+from pathos.pools import ParallelPool
 
 
 class CrAItonAI(AI):
@@ -20,7 +20,9 @@ class CrAItonAI(AI):
     def start(self):
         self.area_priority = list(self.world.areas)
         random.shuffle(self.area_priority)
-        self.monte_carlo_sims = 100
+
+        self.monte_carlo_sims = 10
+        self.num_processes = 5
 
     def priority(self):
         priority = sorted(
@@ -49,57 +51,81 @@ class CrAItonAI(AI):
         continue_attacks = True
         while continue_attacks:
             best_move = None
-            best_score = -100000
-            move = ()
-            for src, dest in self.get_possible_attacks():
-                if (
-                    not src == None
-                    and not dest == None
-                    and self.simulate(
-                        self.world.territory(src).forces,
-                        self.world.territory(dest).forces,
-                    )[0]
-                    < 0.5
-                ):
-                    continue
-                attack_strat = lambda atk, deff: self.simulate(atk, deff)[0] > 0.5
-                score = 0
-                for i in range(self.monte_carlo_sims):
-                    # Create a copy of the game to run the simulation on
-                    copy_game = self.create_game_copy()
+            # best_score = -100000
+            # move = ()
 
-                    if src != None and dest != None:
-                        move = (
-                            src,
-                            dest,
-                            attack_strat,
-                            None,
-                        )
+            all_attacks = list(self.get_possible_attacks())
+            attack_strat = lambda atk, deff: self.simulate(atk, deff)[0] > 0.5
+            # with Pool() as p:
+            #     # print("We got here")
+            #     scores = p.starmap(self.evaluate_attack, all_attacks)
 
-                        # Make move
-                        copy_game.attack(
-                            copy_game.players[self.player.name],
-                            move,
-                        )
-                    else:
-                        move = None
+            pool = ParallelPool()
+            scores = pool.map(self.evaluate_attack, all_attacks)
 
-                    winner = copy_game.play(
-                        turn_order=copy_game.turn_order, randomize_turn_order=False
-                    )
+            # scores = list(map(self.evaluate_attack, all_attacks))
 
-                    if self.player.name == winner:
-                        score += 1
-                    else:
-                        score -= 1
-                # if our score is better than the current best score, store both
-                if score > best_score:
-                    best_move = move
-                    best_score = score
+            best_move = all_attacks[scores.index(max(scores))]
+            # for attack in self.get_possible_attacks():
+            #     score = self.evaluate_attack(attack)
+            #     # if our score is better than the current best score, store both
+            #     if score > best_score:
+            #         best_move = move
+            #         best_score = score
             if best_move != None:
-                yield best_move
+                yield (best_move[0], best_move[1], attack_strat, None)
             else:
                 continue_attacks = False
+
+    def evaluate_attack(self, attack_tuple):
+        # print("Hello")
+        src, dest = attack_tuple
+        # print(type(src), type(dest), type(tup))
+        # print(f"Evaluating attack from {src} on {dest}")
+        if (
+            not src == None
+            and not dest == None
+            and self.simulate(
+                self.world.territory(src).forces,
+                self.world.territory(dest).forces,
+            )[0]
+            < 0.5
+        ):
+            return 0
+
+        attack_strat = lambda atk, deff: self.simulate(atk, deff)[0] > 0.5
+
+        score = 0
+        for i in range(self.monte_carlo_sims):
+            # Create a copy of the game to run the simulation on
+            copy_game = self.create_game_copy()
+
+            if src != None and dest != None:
+                move = (
+                    src,
+                    dest,
+                    attack_strat,
+                    None,
+                )
+
+                # Make move
+                copy_game.attack(
+                    copy_game.players[self.player.name],
+                    move,
+                )
+            else:
+                move = None
+
+            winner = copy_game.play(
+                turn_order=copy_game.turn_order, randomize_turn_order=False
+            )
+
+            if self.player.name == winner:
+                score += 1
+            else:
+                score -= 1
+
+        return score
 
     def freemove(self):
         srcs = sorted(
