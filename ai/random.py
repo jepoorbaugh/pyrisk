@@ -44,10 +44,16 @@ class RandomAI(AI):
         yield (src_territory, dst_territory, lambda x, y: random.choice([True, False]), None)
 
     def reinforce(self, available):
-        # TODO: Make this ACTUALLY random
+        # Make list of border territories
         border = [t for t in self.player.territories if t.border]
+
+        # Instantiate result list so it can be appended to while empty
         result = collections.defaultdict(int)
+
+        # Go through and randomly reinforce the borders troop by troop
         for i in range(available):
             t = random.choice(border)
             result[t] += 1
+
+        # Return reinforcement result
         return result
