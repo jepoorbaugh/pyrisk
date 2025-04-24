@@ -8,6 +8,8 @@ A simple implementation of a variant of the **Risk** board game for python, desi
 
 Runs in `python` (2.7 or 3.x) using the `curses` library to display the map (but can be run in pure-console mode).
 
+**NOTE**: For Windows devices install [windows-curses](https://pypi.org/project/windows-curses/) to run with the display map (the normal `curses` library should be pre-installed for Linux and macOS systems).
+
 Usage
 -----
 
