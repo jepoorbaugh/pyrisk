@@ -18,16 +18,25 @@ class CrAItonAI(AI):
     """
 
     def start(self):
+        # Set area_priority property to randomly shuffled list of the areas (continents)
         self.area_priority = list(self.world.areas)
         random.shuffle(self.area_priority)
+
+        # Set monte_carlo_sims property to desired amount
         self.monte_carlo_sims = 100
 
     def priority(self):
+
+        # Sort territories that are borders by the area_priority property made at start
         priority = sorted(
             [t for t in self.player.territories if t.border],
             key=lambda x: self.area_priority.index(x.area.name),
         )
+
+        # 
         priority = [t for t in priority if t.area == priority[0].area]
+
+        # Return 
         return priority if priority else list(self.player.territories)
 
     def initial_placement(self, empty, available):
@@ -103,13 +112,21 @@ class CrAItonAI(AI):
 
     def freemove(self):
         # TODO: This is currently just copied from BetterAI, need to update to heuristics
+
+        # This is the old BetterAI code
+        # Sort the non-border territories by amount of forces
         srcs = sorted(
             [t for t in self.player.territories if not t.border], key=lambda x: x.forces
         )
+
+        # If there are any non-border territories grab the one with the most forces as src
+        # and move most amount of troops possible to territory found with priority function
         if srcs:
             src = srcs[-1]
             n = src.forces - 1
             return (src, self.priority()[0], n)
+        
+        # Return nothing if there are no non-border territories
         return None
 
     def create_game_copy(self):
