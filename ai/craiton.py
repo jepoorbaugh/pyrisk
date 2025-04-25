@@ -129,6 +129,7 @@ class CrAItonAI(AI):
 
                 if urge < self.urge:
                     dst = t
+                    break
             
             # Calculate moving max amount of troops from src
             n = src.forces - 1
