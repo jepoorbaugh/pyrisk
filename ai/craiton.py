@@ -27,7 +27,7 @@ class CrAItonAI(AI):
 
         # Sort territories that are borders by their area based off the area_priority made at start
         priority = sorted(
-            self.get_border(),
+            [t for t in self.player.territories if t.border],
             key=lambda x: self.area_priority.index(x.area.name),
         )
 
@@ -45,7 +45,7 @@ class CrAItonAI(AI):
             return random.choice(self.priority())
 
     def reinforce(self, available):
-        border = self.get_border()
+        border = [t for t in self.player.territories if t.border]
         result = collections.defaultdict(int)
         for i in range(available):
             t = random.choice(border)
@@ -122,6 +122,7 @@ class CrAItonAI(AI):
             src = srcs[0]
 
             # Use heuristic with priority function to determine border that needs reinforcement the most
+            dst = None
             for t in self.priority():
                 # The heuristic is a ratio of troops in the border to total troops
                 urge = t.forces / self.player.forces
@@ -132,8 +133,9 @@ class CrAItonAI(AI):
             # Calculate moving max amount of troops from src
             n = src.forces - 1
 
-            # Return the result
-            return (src, dst, n)
+            # Return the result if dst not None
+            if dst != None:
+                return (src, dst, n)
 
         # Return None if no srcs or if no borders follow the heuristic
         return None
