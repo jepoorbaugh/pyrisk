@@ -7,7 +7,6 @@ import importlib
 import re
 import collections
 import curses
-from tqdm import tqdm
 from game import Game
 
 from world import CONNECT, MAP, KEY, AREAS
@@ -71,35 +70,30 @@ def wrapper(stdscr, **kwargs):
     for i, klass in enumerate(player_classes):
         g.add_player(NAMES[i], klass)
     return g.play()
-        
-if args.games == 1:
+
+
+# Dict for keeping track of wins
+wins = collections.defaultdict(int)
+
+# Start timer for benchmarking
+start_time = time.perf_counter()
+
+# Run matches
+for j in range(args.games):
+    kwargs['round'] = (j+1, args.games)
+    kwargs['history'] = wins
     if args.curses:
-        curses.wrapper(wrapper, **kwargs)
+        victor = curses.wrapper(wrapper, **kwargs)
     else:
-        wrapper(None, **kwargs)
-else:
-    # Dict for keeping track of wins
-    wins = collections.defaultdict(int)
+        victor = wrapper(None, **kwargs)
+    wins[victor] += 1
 
-    # Start timer for benchmarking
-    start_time = time.perf_counter()
+# End timer and print runtime time
+end_time = time.perf_counter()
+print(f"The execution took {(end_time - start_time):.2f} seconds")
 
-    # Run matches
-    for j in tqdm(range(args.games), desc="Running matches"):
-        kwargs['round'] = (j+1, args.games)
-        kwargs['history'] = wins
-        if args.curses:
-            victor = curses.wrapper(wrapper, **kwargs)
-        else:
-            victor = wrapper(None, **kwargs)
-        wins[victor] += 1
-    
-    # End timer and print runtime time
-    end_time = time.perf_counter()
-    print(f"The execution took {(end_time - start_time):.2f} seconds")
-
-    # Print results of matches
-    print("Outcome of %s games" % args.games)
-    for k in sorted(wins, key=lambda x: wins[x]):
-        print("%s [%s]:\t%s" % (k, player_classes[NAMES.index(k)].__name__, wins[k]))
+# Print results of matches
+print("Outcome of %s games" % args.games)
+for k in sorted(wins, key=lambda x: wins[x]):
+    print("%s [%s]:\t%s" % (k, player_classes[NAMES.index(k)].__name__, wins[k]))
 
