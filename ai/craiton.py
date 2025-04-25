@@ -20,11 +20,14 @@ class CrAItonAI(AI):
         # Set monte_carlo_sims property to desired amount
         self.monte_carlo_sims = 100
 
+        # Set the urge amount for freemove heuristic
+        self.urge = 0.25
+
     def priority(self):
 
         # Sort territories that are borders by their area based off the area_priority made at start
         priority = sorted(
-            [t for t in self.player.territories if t.border],
+            self.get_border(),
             key=lambda x: self.area_priority.index(x.area.name),
         )
 
@@ -42,7 +45,7 @@ class CrAItonAI(AI):
             return random.choice(self.priority())
 
     def reinforce(self, available):
-        border = [t for t in self.player.territories if t.border]
+        border = self.get_border()
         result = collections.defaultdict(int)
         for i in range(available):
             t = random.choice(border)
@@ -113,17 +116,27 @@ class CrAItonAI(AI):
             reverse=True
         )
 
-        # If there are no sources return None
-        if not srcs:
-            return None
+        # Continue if srcs exist
+        if srcs:
+            # Grab the territory with the most forces as src
+            src = srcs[0]
 
-        # Grab the territory with the most forces as src and move most amount of troops 
-        # possible to territory found with priority function
-        src = srcs[0]
-        n = src.forces - 1
-        # NOTE: This is the part I need to change, I should use a combo of the priority
-        # and a heuristic. I also may change the priority
-        return (src, self.priority()[0], n)
+            # Use heuristic with priority function to determine border that needs reinforcement the most
+            for t in self.priority():
+                # The heuristic is a ratio of troops in the border to total troops
+                urge = t.forces / self.player.forces
+
+                if urge < self.urge:
+                    dst = t
+            
+            # Calculate moving max amount of troops from src
+            n = src.forces - 1
+
+            # Return the result
+            return (src, dst, n)
+
+        # Return None if no srcs or if no borders follow the heuristic
+        return None
 
     def create_game_copy(self):
         copy_game: Game = Game(curses=False, iscopy=True)
