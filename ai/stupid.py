@@ -7,6 +7,7 @@ class StupidAI(AI):
     """
     StupidAI: Plays a completely random game, randomly choosing and reinforcing
     territories, and attacking wherever it can without any considerations of wisdom.
+    NOTE: This is not actually random for attack - it uses a heuristic
     """
 
     def initial_placement(self, empty, remaining):
