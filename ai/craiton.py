@@ -1,12 +1,7 @@
 from ai import AI
-from ai.random import RandomAI
-
-from territory import Territory
+from ai.stupid import StupidAI
 
 from game import Game
-from player import Player
-
-from copy import deepcopy
 
 import collections
 import random
@@ -18,16 +13,28 @@ class CrAItonAI(AI):
     """
 
     def start(self):
+        # Set area_priority property to randomly shuffled list of the areas (continents)
         self.area_priority = list(self.world.areas)
         random.shuffle(self.area_priority)
+
+        # Set monte_carlo_sims property to desired amount
         self.monte_carlo_sims = 100
 
+        # Set the urge amount for freemove heuristic
+        self.urge = 0.25
+
     def priority(self):
+
+        # Sort territories that are borders by their area based off the area_priority made at start
         priority = sorted(
             [t for t in self.player.territories if t.border],
             key=lambda x: self.area_priority.index(x.area.name),
         )
+
+        # Filter out to just the first priority area
         priority = [t for t in priority if t.area == priority[0].area]
+
+        # Return the priority if it exists otherwise just return the list of player territories
         return priority if priority else list(self.player.territories)
 
     def initial_placement(self, empty, available):
@@ -102,20 +109,43 @@ class CrAItonAI(AI):
                 continue_attacks = False
 
     def freemove(self):
+        # Sort the non-border territories by amount of forces (in descending for ease)
         srcs = sorted(
-            [t for t in self.player.territories if not t.border], key=lambda x: x.forces
+            [t for t in self.player.territories if not t.border], 
+            key=lambda x: x.forces, 
+            reverse=True
         )
+
+        # Continue if srcs exist
         if srcs:
-            src = srcs[-1]
+            # Grab the territory with the most forces as src
+            src = srcs[0]
+
+            # Use heuristic with priority function to determine border that needs reinforcement the most
+            dst = None
+            for t in self.priority():
+                # The heuristic is a ratio of troops in the border to total troops
+                t_urge = t.forces / self.player.forces
+
+                if t_urge < self.urge:
+                    dst = t
+                    break
+            
+            # Calculate moving max amount of troops from src
             n = src.forces - 1
-            return (src, self.priority()[0], n)
+
+            # Return the result if dst not None
+            if dst != None:
+                return (src, dst, n)
+
+        # Return None if no srcs or if no borders follow the heuristic
         return None
 
     def create_game_copy(self):
         copy_game: Game = Game(curses=False, iscopy=True)
 
         for p in list(self.game.players):
-            copy_game.add_player(p, RandomAI)
+            copy_game.add_player(p, StupidAI)
 
         # Fix copy_game.world's territories to have the correct owners
         for name, territory in copy_game.world.territories.items():
