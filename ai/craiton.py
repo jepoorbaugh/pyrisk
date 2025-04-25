@@ -1,12 +1,7 @@
 from ai import AI
 from ai.stupid import StupidAI
 
-from territory import Territory
-
 from game import Game
-from player import Player
-
-from copy import deepcopy
 
 import collections
 import random
@@ -118,17 +113,17 @@ class CrAItonAI(AI):
             reverse=True
         )
 
-        # If there are any non-border territories grab the one with the most forces as src
-        # and move most amount of troops possible to territory found with priority function
-        if srcs:
-            src = srcs[0]
-            n = src.forces - 1
-            # NOTE: This is the part I need to change, I should use a combo of the priority
-            # and a heuristic. I also may change the priority
-            return (src, self.priority()[0], n)
-        
-        # Return nothing if there are no non-border territories
-        return None
+        # If there are no sources return None
+        if not srcs:
+            return None
+
+        # Grab the territory with the most forces as src and move most amount of troops 
+        # possible to territory found with priority function
+        src = srcs[0]
+        n = src.forces - 1
+        # NOTE: This is the part I need to change, I should use a combo of the priority
+        # and a heuristic. I also may change the priority
+        return (src, self.priority()[0], n)
 
     def create_game_copy(self):
         copy_game: Game = Game(curses=False, iscopy=True)
