@@ -45,4 +45,4 @@ For our project we set out to make an AI agent for Risk which somehow utilized M
 
 CrAIton is an AI agent for pyrisk that utilizes Monte Carlo tree search for attacking only. To improve efficiency, efforts to simulate games in parrallel for attacking were made, but it was found to be impossible with how Python and pyrisk operate. The `freemove` function was also changed from random to a heuristic. Finally the `start`, `initial_placement`, and `reinforce` functions were copied over from BetterAI because of a mixture of time constraints and lack of reason to change them.
 
-Overall, these changes resulted in an pyrisk AI agent that performs **better** than previous best performing AI agent, BetterAI.
+Overall, these changes resulted in an pyrisk AI agent that does use indeed Monte Carlo. It is not easy to say that this agent is better than the others because of the amount of variables going on (player count, how the other players play, starting position, etc.) and the lack of debugging tools in pyrisk which make it difficult to benchmark, but it definitely performs fairly well against the other agents in our testing.
