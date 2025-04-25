@@ -27,16 +27,16 @@ class CrAItonAI(AI):
 
     def priority(self):
 
-        # Sort territories that are borders by the area_priority property made at start
+        # Sort territories that are borders by their area based off the area_priority made at start
         priority = sorted(
             [t for t in self.player.territories if t.border],
             key=lambda x: self.area_priority.index(x.area.name),
         )
 
-        # 
+        # Filter out to just the first priority area
         priority = [t for t in priority if t.area == priority[0].area]
 
-        # Return 
+        # Return the priority if it exists otherwise just return the list of player territories
         return priority if priority else list(self.player.territories)
 
     def initial_placement(self, empty, available):
@@ -111,19 +111,20 @@ class CrAItonAI(AI):
                 continue_attacks = False
 
     def freemove(self):
-        # TODO: This is currently just copied from BetterAI, need to update to heuristics
-
-        # This is the old BetterAI code
-        # Sort the non-border territories by amount of forces
+        # Sort the non-border territories by amount of forces (in descending for ease)
         srcs = sorted(
-            [t for t in self.player.territories if not t.border], key=lambda x: x.forces
+            [t for t in self.player.territories if not t.border], 
+            key=lambda x: x.forces, 
+            reverse=True
         )
 
         # If there are any non-border territories grab the one with the most forces as src
         # and move most amount of troops possible to territory found with priority function
         if srcs:
-            src = srcs[-1]
+            src = srcs[0]
             n = src.forces - 1
+            # NOTE: This is the part I need to change, I should use a combo of the priority
+            # and a heuristic. I also may change the priority
             return (src, self.priority()[0], n)
         
         # Return nothing if there are no non-border territories
