@@ -6,7 +6,9 @@ import time
 import importlib
 import re
 import collections
-import curses
+
+# if __name__ == "__main__":
+
 from tqdm import tqdm
 from game import Game
 
@@ -138,6 +140,7 @@ def main():
 
     if args.games == 1:
         if args.curses:
+            import curses
             curses.wrapper(wrapper, **kwargs)
         else:
             wrapper(None, **kwargs)
@@ -153,6 +156,7 @@ def main():
             kwargs["round"] = (j + 1, args.games)
             kwargs["history"] = wins
             if args.curses:
+                import curses
                 victor = curses.wrapper(wrapper, **kwargs)
             else:
                 victor = wrapper(None, **kwargs)

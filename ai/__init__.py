@@ -146,3 +146,6 @@ class AI(object):
         objects or names, or None to skip this part of the turn.
         """
         return None
+    
+    def evaluate_attack(self, attack_tuple):
+        pass

@@ -9,7 +9,7 @@ import random
 
 # from multiprocessing.pool import ThreadPool as Pool
 # from multiprocessing import Pool
-from pathos.pools import ParallelPool
+from pathos.pools import ProcessPool
 
 
 class CrAItonAI(AI):
@@ -60,7 +60,8 @@ class CrAItonAI(AI):
             #     # print("We got here")
             #     scores = p.starmap(self.evaluate_attack, all_attacks)
 
-            pool = ParallelPool()
+            pool = ProcessPool()
+            print(all_attacks)
             scores = pool.map(self.evaluate_attack, all_attacks)
 
             # scores = list(map(self.evaluate_attack, all_attacks))
@@ -78,7 +79,6 @@ class CrAItonAI(AI):
                 continue_attacks = False
 
     def evaluate_attack(self, attack_tuple):
-        # print("Hello")
         src, dest = attack_tuple
         # print(type(src), type(dest), type(tup))
         # print(f"Evaluating attack from {src} on {dest}")
@@ -125,6 +125,7 @@ class CrAItonAI(AI):
             else:
                 score -= 1
 
+        # print(f"Attack {attack_tuple} Score: {score}")
         return score
 
     def freemove(self):

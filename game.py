@@ -30,6 +30,31 @@ class Game(object):
         "deal": False,  # deal out territories rather than let players choose
     }
 
+    def __getstate__(self):
+        # print("Getting State")
+        out = self.__dict__.copy()
+
+        # print(type(out["display"]))
+
+        del out["display"]
+
+        return out
+
+    def __setstate__(self, state):
+        self.__dict__.update(state)
+
+        if self.options["curses"]:
+            self.display = CursesDisplay(
+                self.options["screen"],
+                self,
+                self.options["cmap"],
+                self.options["ckey"],
+                self.options["color"],
+                self.options["wait"],
+            )
+        else:
+            self.display = Display()
+
     def __init__(self, **options):
         self.options = self.defaults.copy()
         self.options.update(options)
