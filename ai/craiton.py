@@ -1,5 +1,5 @@
 from ai import AI
-from ai.stupid import StupidAI
+from ai.random import RandomAI
 
 from territory import Territory
 
@@ -115,7 +115,7 @@ class CrAItonAI(AI):
         copy_game: Game = Game(curses=False, iscopy=True)
 
         for p in list(self.game.players):
-            copy_game.add_player(p, StupidAI)
+            copy_game.add_player(p, RandomAI)
 
         # Fix copy_game.world's territories to have the correct owners
         for name, territory in copy_game.world.territories.items():
