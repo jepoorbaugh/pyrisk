@@ -1,5 +1,5 @@
 from ai import AI
-from ai.random import RandomAI
+from ai.stupid import StupidAI
 
 from game import Game
 
@@ -125,9 +125,9 @@ class CrAItonAI(AI):
             dst = None
             for t in self.priority():
                 # The heuristic is a ratio of troops in the border to total troops
-                urge = t.forces / self.player.forces
+                t_urge = t.forces / self.player.forces
 
-                if urge < self.urge:
+                if t_urge < self.urge:
                     dst = t
                     break
             
@@ -145,7 +145,7 @@ class CrAItonAI(AI):
         copy_game: Game = Game(curses=False, iscopy=True)
 
         for p in list(self.game.players):
-            copy_game.add_player(p, RandomAI)
+            copy_game.add_player(p, StupidAI)
 
         # Fix copy_game.world's territories to have the correct owners
         for name, territory in copy_game.world.territories.items():
